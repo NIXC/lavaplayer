@@ -2,6 +2,7 @@
 #include <vorbis/codec.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 typedef struct vorbis_state_s {
 	vorbis_info info;
@@ -30,13 +31,13 @@ CONNECTOR_EXPORT jlong JNICALL Java_com_sedmelluq_discord_lavaplayer_natives_vor
 
 	vorbis_info_init(&state->info);
 
-	return (jlong) state;
+	return (jlong)(intptr_t) state;
 }
 
 CONNECTOR_EXPORT jint JNICALL Java_com_sedmelluq_discord_lavaplayer_natives_vorbis_VorbisDecoderLibrary_initialise(JNIEnv *jni, jobject me,
 	jlong instance, jobject id_direct_buffer, jint id_offset, jint id_length, jobject setup_direct_buffer, jint setup_offset, jint setup_length) {
 
-	vorbis_state_t* state = (vorbis_state_t*) instance;
+	vorbis_state_t* state = (vorbis_state_t*)(intptr_t) instance;
 
 	// Dummy comment instance - needs non-NULL vendor, otherwise headerin will reject setup (codebook) packet.
 	vorbis_comment comment;
@@ -70,12 +71,12 @@ CONNECTOR_EXPORT jint JNICALL Java_com_sedmelluq_discord_lavaplayer_natives_vorb
 }
 
 CONNECTOR_EXPORT jint JNICALL Java_com_sedmelluq_discord_lavaplayer_natives_vorbis_VorbisDecoderLibrary_getChannelCount(JNIEnv *jni, jobject me, jlong instance) {
-	vorbis_state_t* state = (vorbis_state_t*) instance;
+	vorbis_state_t* state = (vorbis_state_t*)(intptr_t) instance;
 	return state->info.channels;
 }
 
 CONNECTOR_EXPORT jint JNICALL Java_com_sedmelluq_discord_lavaplayer_natives_vorbis_VorbisDecoderLibrary_input(JNIEnv *jni, jobject me, jlong instance, jobject direct_buffer, jint offset, jint length) {
-	vorbis_state_t* state = (vorbis_state_t*) instance;
+	vorbis_state_t* state = (vorbis_state_t*)(intptr_t) instance;
 	ogg_packet packet;
 
 	build_ogg_packet(jni, &packet, direct_buffer, offset, length, JNI_FALSE);
@@ -89,7 +90,7 @@ CONNECTOR_EXPORT jint JNICALL Java_com_sedmelluq_discord_lavaplayer_natives_vorb
 }
 
 CONNECTOR_EXPORT jint JNICALL Java_com_sedmelluq_discord_lavaplayer_natives_vorbis_VorbisDecoderLibrary_output(JNIEnv *jni, jobject me, jlong instance, jobjectArray channels, jint length) {
-	vorbis_state_t* state = (vorbis_state_t*) instance;
+	vorbis_state_t* state = (vorbis_state_t*)(intptr_t) instance;
 	float** buffers;
 
 	size_t available = (size_t) vorbis_synthesis_pcmout(&state->dsp_state, &buffers);
@@ -118,7 +119,7 @@ CONNECTOR_EXPORT jint JNICALL Java_com_sedmelluq_discord_lavaplayer_natives_vorb
 }
 
 CONNECTOR_EXPORT void JNICALL Java_com_sedmelluq_discord_lavaplayer_natives_vorbis_VorbisDecoderLibrary_destroy(JNIEnv *jni, jobject me, jlong instance) {
-	vorbis_state_t* state = (vorbis_state_t*) instance;
+	vorbis_state_t* state = (vorbis_state_t*)(intptr_t) instance;
 
 	if (state->initialised) {
 		vorbis_block_clear(&state->block);
